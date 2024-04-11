@@ -1230,7 +1230,7 @@ bool FileBrowser::mountSDCard(bool formatOnFail, char const * mountPath, size_t 
 {
   return true;
 }
-
+#error
 #else
 
 bool FileBrowser::mountSDCard(bool formatOnFail, char const * mountPath, size_t maxFiles, int allocationUnitSize, int MISO, int MOSI, int CLK, int CS)
@@ -1247,6 +1247,11 @@ bool FileBrowser::mountSDCard(bool formatOnFail, char const * mountPath, size_t 
     default:
       break;
   }
+      MISO = 2;
+      MOSI = 12;
+      CLK = 14;
+      CS = 13;
+      allocationUnitSize = 16 * 1024;
 
   s_SDCardMountPath          = mountPath;
   s_SDCardMaxFiles           = maxFiles;
@@ -1258,9 +1263,10 @@ bool FileBrowser::mountSDCard(bool formatOnFail, char const * mountPath, size_t 
   s_SDCardMounted            = false;
 
   sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-  host.slot = HSPI_HOST;
+  //host.slot = HSPI_HOST;
 
   #if FABGL_ESP_IDF_VERSION <= FABGL_ESP_IDF_VERSION_VAL(3, 3, 5)
+  #error
 
   sdspi_slot_config_t slot_config = SDSPI_SLOT_CONFIG_DEFAULT();
   slot_config.gpio_miso = int2gpio(MISO);
@@ -1286,7 +1292,7 @@ bool FileBrowser::mountSDCard(bool formatOnFail, char const * mountPath, size_t 
   bus_cfg.quadwp_io_num    = -1;
   bus_cfg.quadhd_io_num    = -1;
   bus_cfg.max_transfer_sz  = 4000;
-  auto r = spi_bus_initialize((spi_host_device_t)host.slot, &bus_cfg, 2);
+  auto r = spi_bus_initialize((spi_host_device_t)host.slot, &bus_cfg, SDSPI_DEFAULT_DMA); //2);
 
   if (r == ESP_OK || r == ESP_ERR_INVALID_STATE) {  // ESP_ERR_INVALID_STATE, maybe spi_bus_initialize already called
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
